@@ -9,9 +9,16 @@ import { Input } from "@/components/ui/input";
 interface NavbarProps {
   showSearch?: boolean;
   onUploadClick?: () => void;
+  search?: string;
+  onSearchChange?: (value: string) => void;
 }
 
-export function Navbar({ showSearch = true, onUploadClick }: NavbarProps) {
+export function Navbar({
+  showSearch = true,
+  onUploadClick,
+  search = "",
+  onSearchChange,
+}: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center gap-4 px-4 md:px-6">
@@ -25,7 +32,7 @@ export function Navbar({ showSearch = true, onUploadClick }: NavbarProps) {
           </span>
         </Link>
 
-        {/* Search */}
+        {/* Search — controlled */}
         {showSearch && (
           <div className="hidden flex-1 max-w-sm md:flex mx-4">
             <div className="relative w-full">
@@ -33,8 +40,18 @@ export function Navbar({ showSearch = true, onUploadClick }: NavbarProps) {
               <Input
                 id="navbar-search"
                 placeholder="Search documents..."
+                value={search}
+                onChange={(e) => onSearchChange?.(e.target.value)}
                 className="pl-9 h-9 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-violet-500"
               />
+              {search && (
+                <button
+                  onClick={() => onSearchChange?.("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -58,10 +75,6 @@ export function Navbar({ showSearch = true, onUploadClick }: NavbarProps) {
             <Plus className="h-4 w-4" />
           </Button>
           <ModeToggle />
-          {/* Avatar */}
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-sm font-semibold shadow-sm">
-            U
-          </div>
         </div>
       </div>
     </header>
