@@ -36,16 +36,15 @@ export default function LoginPage() {
 
     setLoading(true);
     // Simulate a small network delay for realism
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 600));
 
-    // Extract name from email (e.g. john.doe@... → John Doe)
-    const namePart = email.split("@")[0].replace(/[._-]/g, " ");
-    const name = namePart
-      .split(" ")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
+    const err = login(email, password);
+    if (err) {
+      setError(err);
+      setLoading(false);
+      return;
+    }
 
-    login(email, name);
     router.push("/");
   };
 

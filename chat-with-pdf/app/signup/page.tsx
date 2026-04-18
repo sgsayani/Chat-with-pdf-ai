@@ -41,8 +41,15 @@ export default function SignupPage() {
     }
 
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    signup(email, name.trim());
+    await new Promise((r) => setTimeout(r, 600));
+
+    const err = signup(email, name.trim(), password);
+    if (err) {
+      setError(err);
+      setLoading(false);
+      return;
+    }
+
     router.push("/");
   };
 
