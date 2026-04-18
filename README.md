@@ -239,7 +239,17 @@ streams the answer token-by-token back to the browser
 
 ## 📸 Screenshots
 
-> *(Add screenshots of: Dashboard, PDF Viewer + Chat, Login page, Dark mode)*
+<img width="1280" height="615" alt="photo_2026-04-18_20-56-59" src="https://github.com/user-attachments/assets/3303ec4b-f014-4924-8fcf-ed596c3c96b1" />
+<img width="1280" height="617" alt="photo_2026-04-18_20-56-35" src="https://github.com/user-attachments/assets/24e81c2e-b933-4a29-9af7-392322c6a943" />
+<img width="1280" height="612" alt="photo_2026-04-18_20-56-20" src="https://github.com/user-attachments/assets/c2bfb9c3-e7c2-42be-a0b1-10ce45d9dfd6" />
+<img width="1280" height="617" alt="photo_2026-04-18_20-55-53" src="https://github.com/user-attachments/assets/0a75c4ba-7e79-4fea-ac80-c22e9529499e" />
+<img width="1280" height="614" alt="photo_2026-04-18_20-55-44" src="https://github.com/user-attachments/assets/6b771833-7a71-4c17-bc24-116329d194b7" />
+<img width="1280" height="620" alt="photo_2026-04-18_20-55-04" src="https://github.com/user-attachments/assets/0507e4a4-e42c-4e7e-8083-8c5c10c35c93" />
+<img width="1280" height="625" alt="photo_2026-04-18_20-54-38" src="https://github.com/user-attachments/assets/d59097e8-8dae-4ab5-b8a3-93dbc935e6ea" />
+<img width="1280" height="617" alt="photo_2026-04-18_20-51-35" src="https://github.com/user-attachments/assets/fc996993-ca33-4fb7-8128-00d359b697f0" />
+<img width="1280" height="616" alt="photo_2026-04-18_20-50-57" src="https://github.com/user-attachments/assets/21a8718e-dce4-4d15-9f67-859618b3deac" />
+<img width="1280" height="610" alt="photo_2026-04-18_20-16-37" src="https://github.com/user-attachments/assets/62ace0a4-ac31-4739-9203-c8e16a71e04d" />
+<img width="1280" height="615" alt="photo_2026-04-18_20-16-23" src="https://github.com/user-attachments/assets/9865b785-ee00-47a7-b76f-d6ed5fcccd43" />
 
 ---
 
