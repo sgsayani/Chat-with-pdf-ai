@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useDocuments, type StoredDoc } from "@/hooks/use-documents";
+import { useAuth } from "@/hooks/use-auth";
 
 type UploadState = "idle" | "selected" | "uploading" | "success" | "error";
 const COLORS = ["violet", "blue", "emerald", "amber", "rose", "indigo"] as const;
@@ -21,7 +22,8 @@ interface Props {
 
 export function UploadZone({ modal = false, onClose }: Props) {
   const router = useRouter();
-  const { addDoc } = useDocuments();
+  const { user } = useAuth();
+  const { addDoc } = useDocuments(user?.email);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");

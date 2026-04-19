@@ -13,29 +13,39 @@ export interface StoredDoc {
   lastChatted?: string;
 }
 
-const STORAGE_KEY = "chatpdf_docs";
+/** Returns a per-user localStorage key so documents are isolated between accounts. */
+function storageKey(userEmail?: string | null): string {
+  return userEmail ? `chatpdf_docs_${userEmail.toLowerCase()}` : "";
+}
 
-function readDocs(): StoredDoc[] {
-  if (typeof window === "undefined") return [];
+function readDocs(key: string): StoredDoc[] {
+  if (!key || typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+    return JSON.parse(localStorage.getItem(key) ?? "[]");
   } catch {
     return [];
   }
 }
 
-function writeDocs(docs: StoredDoc[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(docs));
+function writeDocs(key: string, docs: StoredDoc[]) {
+  if (!key) return;
+  localStorage.setItem(key, JSON.stringify(docs));
   // Notify other components on the same page
   window.dispatchEvent(new CustomEvent("chatpdf_docs_changed"));
 }
 
-export function useDocuments() {
+/**
+ * Pass the current user's email so documents are scoped per account.
+ * If userEmail is undefined/null the hook is a no-op (returns empty list).
+ */
+export function useDocuments(userEmail?: string | null) {
+  const key = storageKey(userEmail);
   const [docs, setDocs] = useState<StoredDoc[]>([]);
 
-  const refresh = useCallback(() => setDocs(readDocs()), []);
+  const refresh = useCallback(() => setDocs(readDocs(key)), [key]);
 
   useEffect(() => {
+    // Re-read whenever the user changes (e.g. fresh signup)
     refresh();
     window.addEventListener("chatpdf_docs_changed", refresh);
     window.addEventListener("storage", refresh);
@@ -46,18 +56,18 @@ export function useDocuments() {
   }, [refresh]);
 
   const addDoc = useCallback((doc: StoredDoc) => {
-    const existing = readDocs().filter((d) => d.docId !== doc.docId);
-    writeDocs([doc, ...existing]);
+    const existing = readDocs(key).filter((d) => d.docId !== doc.docId);
+    writeDocs(key, [doc, ...existing]);
     refresh();
-  }, [refresh]);
+  }, [key, refresh]);
 
   const removeDoc = useCallback((docId: string) => {
-    writeDocs(readDocs().filter((d) => d.docId !== docId));
+    writeDocs(key, readDocs(key).filter((d) => d.docId !== docId));
     refresh();
-  }, [refresh]);
+  }, [key, refresh]);
 
   const bumpMessageCount = useCallback((docId: string) => {
-    const all = readDocs();
+    const all = readDocs(key);
     const updated = all.map((d) =>
       d.docId === docId
         ? {
@@ -70,9 +80,9 @@ export function useDocuments() {
           }
         : d
     );
-    writeDocs(updated);
+    writeDocs(key, updated);
     refresh();
-  }, [refresh]);
+  }, [key, refresh]);
 
   return { docs, addDoc, removeDoc, bumpMessageCount, refresh };
 }

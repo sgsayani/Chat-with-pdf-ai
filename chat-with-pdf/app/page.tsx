@@ -16,7 +16,7 @@ export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [search, setSearch] = useState("");
-  const { docs, removeDoc } = useDocuments();
+  const { docs, removeDoc } = useDocuments(user?.email);
 
   // Redirect to login if not authenticated
   useEffect(() => {

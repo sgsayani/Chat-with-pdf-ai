@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { useDocuments } from "@/hooks/use-documents";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -230,11 +232,13 @@ function ChatPanel({
   docName,
   pages,
   isRealDoc,
+  onMessageSent,
 }: {
   docId: string;
   docName: string;
   pages: number;
   isRealDoc: boolean;
+  onMessageSent?: () => void;
 }) {
   const buildWelcome = (): ChatMessage => ({
     id: "m0",
@@ -316,6 +320,7 @@ function ChatPanel({
             },
           ]);
           setIsLoading(false);
+          onMessageSent?.();
         }, 800);
         return;
       }
@@ -361,6 +366,7 @@ function ChatPanel({
         setMessages((prev) =>
           prev.map((m) => (m.id === aiMsgId ? { ...m, isStreaming: false } : m))
         );
+        onMessageSent?.();
       } catch (err: unknown) {
         if (err instanceof Error && err.name === "AbortError") return;
         setMessages((prev) =>
@@ -379,7 +385,7 @@ function ChatPanel({
         abortRef.current = null;
       }
     },
-    [input, isLoading, messages, docId, isRealDoc]
+    [input, isLoading, messages, docId, isRealDoc, onMessageSent]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -584,13 +590,26 @@ export default function ChatPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
+  const { user, loading: authLoading } = useAuth();
+  const { bumpMessageCount } = useDocuments(user?.email);
 
   const [doc, setDoc] = useState<DocMeta | null>(null);
   const [isMockDoc, setIsMockDoc] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const stored: DocMeta[] = JSON.parse(localStorage.getItem("chatpdf_docs") ?? "[]");
+    // Wait until auth has resolved so we know which user's key to read
+    if (authLoading) return;
+
+    // Redirect unauthenticated visitors to login
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // Read from the per-user scoped key
+    const userKey = `chatpdf_docs_${user.email.toLowerCase()}`;
+    const stored: DocMeta[] = JSON.parse(localStorage.getItem(userKey) ?? "[]");
     const realDoc = stored.find((d) => d.docId === id);
     if (realDoc) {
       setDoc(realDoc);
@@ -611,9 +630,9 @@ export default function ChatPage() {
       }
     }
     setLoaded(true);
-  }, [id]);
+  }, [id, user, authLoading, router]);
 
-  if (!loaded) return null;
+  if (authLoading || !loaded) return null;
 
   if (!doc) {
     return (
@@ -675,6 +694,7 @@ export default function ChatPage() {
             docName={doc.name}
             pages={doc.pages}
             isRealDoc={!isMockDoc}
+            onMessageSent={() => bumpMessageCount(doc.docId)}
           />
         </div>
       </div>

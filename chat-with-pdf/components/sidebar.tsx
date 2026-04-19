@@ -68,8 +68,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onUploadClick }: SidebarProps) {
-  const { docs, removeDoc } = useDocuments();
   const { user, logout } = useAuth();
+  const { docs, removeDoc } = useDocuments(user?.email);
   const router = useRouter();
 
   const handleLogout = () => {
