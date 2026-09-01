@@ -73,12 +73,45 @@ class GeminiEmbeddings extends Embeddings {
     }
   }
 
-  async embedDocuments(texts: string[]): Promise<number[][]> {
-    const results: number[][] = [];
-    for (const text of texts) {
-      results.push(await this.embedWithRetry(text));
+  /**
+   * One Gemini HTTP round-trip for a whole batch of chunks instead of one
+   * call per chunk. embedDocuments() was previously calling embedWithRetry()
+   * per chunk sequentially — ~1-1.5s per chunk meant a 100+ chunk PDF took
+   * 2+ minutes, blowing past the upload route's 60s maxDuration and getting
+   * killed mid-request on Vercel (the 500 "Failed to process PDF" bug).
+   * batchEmbedContents embeds the whole batch in one call, cutting wall
+   * clock ~10x for a batch of 10.
+   */
+  private async embedBatchWithRetry(
+    texts: string[],
+    maxRetries = 2
+  ): Promise<number[][]> {
+    const requests = texts.map((text) => ({
+      content: { role: "user", parts: [{ text: text.slice(0, 8000) }] },
+    }));
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const r = await this.model.batchEmbedContents(
+          { requests },
+          { timeout: 20_000 }
+        );
+        return r.embeddings.map((e) => e.values);
+      } catch (error) {
+        const rateLimited = isRateLimitError(error);
+        if ((!rateLimited && !isTimeoutError(error)) || attempt >= maxRetries) {
+          throw error;
+        }
+        const delay = (rateLimited ? retryDelayMs(error) : null) ?? 2 ** attempt * 1000;
+        console.warn(
+          `  ⏳ Gemini batch embedding ${rateLimited ? "rate-limited" : "timed out"}, retrying in ${Math.round(delay / 1000)}s (attempt ${attempt + 1}/${maxRetries})`
+        );
+        await sleep(delay);
+      }
     }
-    return results;
+  }
+
+  async embedDocuments(texts: string[]): Promise<number[][]> {
+    return this.embedBatchWithRetry(texts);
   }
 
   async embedQuery(text: string): Promise<number[]> {
@@ -103,8 +136,11 @@ export async function embedAndStoreDocs(
     const embeddings = makeEmbeddings();
     const index = client.Index(process.env.PINECONE_INDEX_NAME!);
 
-    // Process in batches of 10 to avoid Gemini rate limits
-    const batchSize = 10;
+    // Each batch now costs ONE Gemini HTTP call (batchEmbedContents) instead
+    // of one call per chunk, so a bigger batch means fewer calls and less
+    // exposure to the free-tier per-minute rate limit — not more risk of
+    // tripping it. Gemini's batchEmbedContents caps at 100 requests/call.
+    const batchSize = 50;
     for (let i = 0; i < docs.length; i += batchSize) {
       const batch = docs.slice(i, i + batchSize);
       await PineconeStore.fromDocuments(batch, embeddings, {

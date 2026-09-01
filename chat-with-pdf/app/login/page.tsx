@@ -49,44 +49,43 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex">
       {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-[45%] flex-col bg-gradient-to-br from-violet-600 via-indigo-600 to-violet-800 p-10 text-white relative overflow-hidden">
-        {/* decorative circles */}
-        <div className="absolute -top-20 -left-20 h-64 w-64 rounded-full bg-white/5" />
-        <div className="absolute top-1/3 -right-10 h-48 w-48 rounded-full bg-white/10" />
-        <div className="absolute bottom-20 left-10 h-32 w-32 rounded-full bg-indigo-400/20" />
+      <div className="hidden lg:flex lg:w-[45%] flex-col bg-foreground p-10 text-background relative overflow-hidden">
+        {/* decorative accent glow */}
+        <div className="absolute -top-32 -right-24 h-80 w-80 rounded-full bg-accent/25 blur-3xl" />
+        <div className="absolute bottom-0 -left-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-12">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
-              <FileText className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background/10 backdrop-blur">
+              <FileText className="h-5 w-5 text-background" />
             </div>
-            <span className="text-2xl font-bold tracking-tight">ChatPDF</span>
+            <span className="text-2xl font-semibold tracking-tight">ChatPDF</span>
           </div>
 
-          <h1 className="text-4xl font-bold leading-tight mb-4">
+          <h1 className="font-serif text-4xl font-medium leading-tight mb-4">
             Chat with your<br />documents using AI
           </h1>
-          <p className="text-violet-200 text-lg leading-relaxed mb-10">
+          <p className="text-background/60 text-lg leading-relaxed mb-10">
             Upload any PDF and start an intelligent conversation. Get instant answers, summaries, and insights.
           </p>
 
           {/* Feature pills */}
           {["Powered by Google Gemini", "Pinecone vector search", "Real-time streaming answers"].map((f) => (
             <div key={f} className="flex items-center gap-2.5 mb-3">
-              <div className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                <svg viewBox="0 0 12 12" className="h-3 w-3 text-white fill-current">
-                  <path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <div className="h-5 w-5 rounded-full bg-background/10 flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 12 12" className="h-3 w-3 fill-current text-background">
+                  <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span className="text-sm text-violet-100">{f}</span>
+              <span className="text-sm text-background/70">{f}</span>
             </div>
           ))}
         </div>
 
         <div className="relative z-10 mt-auto">
-          <p className="text-violet-300 text-xs">© 2026 ChatPDF. All rights reserved.</p>
+          <p className="text-background/40 text-xs">© 2026 ChatPDF. All rights reserved.</p>
         </div>
       </div>
 
@@ -94,14 +93,14 @@ export default function LoginPage() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
         {/* Mobile logo */}
         <div className="flex lg:hidden items-center gap-2 mb-8">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600">
-            <FileText className="h-4 w-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
+            <FileText className="h-4 w-4 text-background" />
           </div>
-          <span className="text-xl font-bold"><span className="text-violet-600">Chat</span>PDF</span>
+          <span className="text-xl font-semibold">Chat<span className="text-accent">PDF</span></span>
         </div>
 
         <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-bold text-foreground mb-1">Welcome back</h2>
+          <h2 className="font-serif text-2xl font-medium text-foreground mb-1">Welcome back</h2>
           <p className="text-muted-foreground text-sm mb-8">Sign in to your account to continue</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -127,7 +126,7 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  className="text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400"
+                  className="text-xs text-accent hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -154,7 +153,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 rounded-lg px-3 py-2">
+              <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-150">
                 {error}
               </p>
             )}
@@ -163,7 +162,7 @@ export default function LoginPage() {
               id="login-submit-btn"
               type="submit"
               disabled={loading}
-              className="h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg shadow-sm mt-1"
+              className="h-11 font-medium mt-1"
             >
               {loading ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Signing in…</>
@@ -182,7 +181,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400">
+            <Link href="/signup" className="font-medium text-accent hover:underline">
               Create one free
             </Link>
           </p>

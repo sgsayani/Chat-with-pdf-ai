@@ -400,9 +400,9 @@ function ChatPanel({
       {/* Header */}
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 shrink-0 bg-background">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-violet-500" />
+          <Sparkles className="h-4 w-4 text-accent" />
           <span className="font-semibold text-sm">AI Assistant</span>
-          <Badge className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30 rounded-full">
+          <Badge variant={isRealDoc ? "success" : "outline"} className="text-[10px] px-1.5 py-0">
             {isRealDoc ? "Live" : "Demo"}
           </Badge>
         </div>
@@ -426,17 +426,17 @@ function ChatPanel({
             className={cn("flex gap-2.5", msg.role === "user" ? "flex-row-reverse" : "flex-row")}
           >
             {msg.role === "assistant" && (
-              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-sm">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent">
                 {msg.isStreaming ? (
-                  <Loader2 className="h-3.5 w-3.5 text-white animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 text-accent-foreground animate-spin" />
                 ) : (
-                  <Sparkles className="h-3.5 w-3.5 text-white" />
+                  <Sparkles className="h-3.5 w-3.5 text-accent-foreground" />
                 )}
               </div>
             )}
             <div
               className={cn(
-                "flex max-w-[80%] flex-col gap-1",
+                "flex max-w-[80%] flex-col gap-1 animate-in fade-in slide-in-from-bottom-1 duration-200",
                 msg.role === "user" ? "items-end" : "items-start"
               )}
             >
@@ -444,7 +444,7 @@ function ChatPanel({
                 className={cn(
                   "rounded-2xl px-4 py-2.5",
                   msg.role === "user"
-                    ? "bg-violet-600 text-white rounded-tr-sm"
+                    ? "bg-accent text-accent-foreground rounded-tr-sm"
                     : "bg-muted text-foreground rounded-tl-sm"
                 )}
               >
@@ -464,24 +464,28 @@ function ChatPanel({
         ))}
       </div>
 
-      {/* Suggestions */}
+      {/* Suggestions — the chat's "empty state" */}
       {messages.length <= 1 && (
-        <div className="px-4 pb-3 flex flex-wrap gap-2">
-          {suggestions.map((s) => (
-            <button
-              key={s}
-              onClick={() => handleSend(s)}
-              className="rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground hover:border-violet-300 hover:text-violet-600 dark:hover:border-violet-700 dark:hover:text-violet-400 transition-colors"
-            >
-              {s}
-            </button>
-          ))}
+        <div className="px-4 pb-4 animate-in fade-in slide-in-from-bottom-1 duration-300">
+          <p className="mb-2.5 font-serif text-sm text-muted-foreground">Ask anything about this document</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                onClick={() => handleSend(s)}
+                className="group flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-left text-xs text-foreground transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-sm"
+              >
+                <Sparkles className="h-3 w-3 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-accent" />
+                <span className="truncate">{s}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {/* Input */}
       <div className="shrink-0 border-t border-border p-3">
-        <div className="flex items-end gap-2 rounded-xl border border-border bg-background px-3 py-2 focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400/30 transition-all">
+        <div className="flex items-end gap-2 rounded-xl border border-border bg-background px-3 py-2 focus-within:border-accent/40 focus-within:ring-3 focus-within:ring-accent/15 transition-all">
           <Textarea
             id="chat-input"
             value={input}
@@ -497,10 +501,8 @@ function ChatPanel({
             onClick={() => handleSend()}
             disabled={!input.trim() || isLoading}
             className={cn(
-              "h-8 w-8 shrink-0 rounded-lg p-0 transition-all",
-              input.trim() && !isLoading
-                ? "bg-violet-600 hover:bg-violet-700 text-white"
-                : "bg-muted text-muted-foreground"
+              "h-8 w-8 shrink-0 rounded-lg p-0",
+              !(input.trim() && !isLoading) && "bg-muted text-muted-foreground shadow-none hover:bg-muted"
             )}
           >
             {isLoading ? (
@@ -658,17 +660,17 @@ export default function ChatPage() {
         </Link>
 
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-violet-100 dark:bg-violet-900/30">
-            <FileText className="h-3.5 w-3.5 text-violet-600" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted">
+            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
           <span className="truncate text-sm font-semibold text-foreground max-w-xs">
             {doc.name}
           </span>
-          <Badge className="hidden sm:inline-flex text-[10px] px-1.5 py-0 shrink-0 bg-muted text-muted-foreground border-border rounded-full">
+          <Badge variant="outline" className="hidden sm:inline-flex text-[10px] px-1.5 py-0 shrink-0">
             {doc.pages} pages
           </Badge>
           {!isMockDoc && (
-            <Badge className="hidden sm:inline-flex text-[10px] px-1.5 py-0 shrink-0 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30 rounded-full">
+            <Badge variant="success" className="hidden sm:inline-flex text-[10px] px-1.5 py-0 shrink-0">
               AI Ready
             </Badge>
           )}

@@ -54,25 +54,24 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-[45%] flex-col bg-gradient-to-br from-violet-600 via-indigo-600 to-violet-800 p-10 text-white relative overflow-hidden">
-        <div className="absolute -top-20 -left-20 h-64 w-64 rounded-full bg-white/5" />
-        <div className="absolute top-1/3 -right-10 h-48 w-48 rounded-full bg-white/10" />
-        <div className="absolute bottom-20 left-10 h-32 w-32 rounded-full bg-indigo-400/20" />
+      <div className="hidden lg:flex lg:w-[45%] flex-col bg-foreground p-10 text-background relative overflow-hidden">
+        <div className="absolute -top-32 -right-24 h-80 w-80 rounded-full bg-accent/25 blur-3xl" />
+        <div className="absolute bottom-0 -left-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-12">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
-              <FileText className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background/10 backdrop-blur">
+              <FileText className="h-5 w-5 text-background" />
             </div>
-            <span className="text-2xl font-bold tracking-tight">ChatPDF</span>
+            <span className="text-2xl font-semibold tracking-tight">ChatPDF</span>
           </div>
 
-          <h1 className="text-4xl font-bold leading-tight mb-4">
+          <h1 className="font-serif text-4xl font-medium leading-tight mb-4">
             Start chatting with<br />your documents today
           </h1>
-          <p className="text-violet-200 text-lg leading-relaxed mb-10">
+          <p className="text-background/60 text-lg leading-relaxed mb-10">
             Create a free account and unlock AI-powered conversations with any PDF — research papers, contracts, books and more.
           </p>
 
@@ -83,16 +82,16 @@ export default function SignupPage() {
               { label: "Secure", sublabel: "Your data stays yours" },
               { label: "Any PDF", sublabel: "Up to 50 MB" },
             ].map((f) => (
-              <div key={f.label} className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
+              <div key={f.label} className="rounded-lg bg-background/5 border border-background/10 p-3">
                 <p className="font-semibold text-sm">{f.label}</p>
-                <p className="text-violet-200 text-xs mt-0.5">{f.sublabel}</p>
+                <p className="text-background/60 text-xs mt-0.5">{f.sublabel}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="relative z-10 mt-auto">
-          <p className="text-violet-300 text-xs">© 2026 ChatPDF. All rights reserved.</p>
+          <p className="text-background/40 text-xs">© 2026 ChatPDF. All rights reserved.</p>
         </div>
       </div>
 
@@ -100,14 +99,14 @@ export default function SignupPage() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
         {/* Mobile logo */}
         <div className="flex lg:hidden items-center gap-2 mb-8">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600">
-            <FileText className="h-4 w-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
+            <FileText className="h-4 w-4 text-background" />
           </div>
-          <span className="text-xl font-bold"><span className="text-violet-600">Chat</span>PDF</span>
+          <span className="text-xl font-semibold">Chat<span className="text-accent">PDF</span></span>
         </div>
 
         <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-bold text-foreground mb-1">Create your account</h2>
+          <h2 className="font-serif text-2xl font-medium text-foreground mb-1">Create your account</h2>
           <p className="text-muted-foreground text-sm mb-8">Free forever. No credit card required.</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -182,7 +181,7 @@ export default function SignupPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 rounded-lg px-3 py-2">
+              <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-150">
                 {error}
               </p>
             )}
@@ -191,7 +190,7 @@ export default function SignupPage() {
               id="signup-submit-btn"
               type="submit"
               disabled={loading}
-              className="h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg shadow-sm mt-1"
+              className="h-11 font-medium mt-1"
             >
               {loading ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Creating account…</>
@@ -215,7 +214,7 @@ export default function SignupPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400">
+            <Link href="/login" className="font-medium text-accent hover:underline">
               Sign in
             </Link>
           </p>

@@ -5,7 +5,7 @@ import { getPineconeClient } from "@/lib/pinecone-client";
 import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
-export const maxDuration = 60; // allow up to 60s for large PDFs
+export const maxDuration = 120; // batched embedding is fast, but leaves room for a rate-limit retry backoff
 
 export async function POST(req: NextRequest) {
   try {

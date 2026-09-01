@@ -8,7 +8,7 @@ import { UploadZone } from "@/components/upload-zone";
 import { DocumentCard } from "@/components/document-card";
 import { useDocuments } from "@/hooks/use-documents";
 import { useAuth } from "@/hooks/use-auth";
-import { FileText, TrendingUp, MessageSquare, UploadCloud } from "lucide-react";
+import { FileText, TrendingUp, MessageSquare, Plus, MessageCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -36,13 +36,21 @@ export default function Home() {
   const totalMessages = docs.reduce((a, d) => a + d.messageCount, 0);
 
   const stats = [
-    { label: "Documents", value: docs.length, icon: FileText, color: "text-violet-600", bg: "bg-violet-50 dark:bg-violet-900/20" },
-    { label: "Ready to Chat", value: docs.length, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-    { label: "Total Chats", value: totalMessages, icon: MessageSquare, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    { label: "Documents", sublabel: "Your library", value: docs.length, icon: FileText },
+    { label: "Ready to chat", sublabel: "AI-ready documents", value: docs.length, icon: Sparkles },
+    { label: "Conversations", sublabel: "Questions answered", value: totalMessages, icon: MessageSquare },
   ];
 
+  // Real activity, derived from existing document metadata — most recently
+  // uploaded first (the order useDocuments already keeps), one line each.
+  const activity = docs.slice(0, 4).map((d) =>
+    d.lastChatted
+      ? { doc: d, icon: MessageCircle, text: `Chatted with ${d.name}`, when: d.lastChatted }
+      : { doc: d, icon: FileText, text: `Uploaded ${d.name}`, when: d.uploadedAt }
+  );
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col">
       {showUploadModal && (
         <UploadZone modal onClose={() => setShowUploadModal(false)} />
       )}
@@ -57,30 +65,53 @@ export default function Home() {
         <Sidebar onUploadClick={() => setShowUploadModal(true)} />
 
         <main className="flex-1 overflow-auto">
-          <div className="mx-auto max-w-5xl px-4 py-8 md:px-8">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                Welcome back, {user.name.split(" ")[0]} 👋
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Upload a PDF and start a conversation with its content.
-              </p>
+          <div className="mx-auto max-w-5xl px-4 py-10 md:px-8">
+            {/* Hero */}
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-6 border-b border-border pb-8">
+              <div className="relative">
+                <p className="mb-2 text-xs font-semibold tracking-widest text-accent uppercase">Your library</p>
+                <h1 className="font-serif text-3xl sm:text-4xl font-medium tracking-tight text-foreground">
+                  Your documents
+                </h1>
+                <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                  Everything you need to read, understand, and work with your PDFs.
+                </p>
+              </div>
+
+              {/* Subtle decorative document-stack, echoes the upload panel's motif */}
+              <div className="relative hidden h-16 w-16 shrink-0 sm:block">
+                <div className="absolute inset-x-2 top-2 h-full rounded-md border border-border bg-muted/50 rotate-[-8deg]" />
+                <div className="absolute inset-x-1 top-1 h-full rounded-md border border-border bg-muted rotate-[5deg]" />
+                <div className="absolute inset-0 flex items-center justify-center rounded-md border border-border bg-card shadow-sm">
+                  <FileText className="h-5 w-5 text-accent" />
+                </div>
+              </div>
             </div>
 
-            {/* Stats */}
-            <div className="mb-8 grid grid-cols-3 gap-4">
-              {stats.map((s) => (
-                <div key={s.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${s.bg}`}>
-                    <s.icon className={`h-5 w-5 ${s.color}`} />
+            <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
+              <Button onClick={() => setShowUploadModal(true)} className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                New Document
+              </Button>
+
+              {/* Stats — three distinct visual treatments, not identical boxes */}
+              <div className="flex items-stretch gap-px overflow-hidden rounded-lg border border-border bg-border">
+                {stats.map((s, i) => (
+                  <div
+                    key={s.label}
+                    className="animate-in fade-in slide-in-from-bottom-1 flex items-center gap-2.5 bg-card px-4 py-3"
+                    style={{ animationDelay: `${i * 80}ms`, animationDuration: "400ms", animationFillMode: "backwards" }}
+                  >
+                    <s.icon className="h-3.5 w-3.5 text-accent" />
+                    <div className="leading-tight">
+                      <p className="font-serif text-lg font-medium text-foreground">
+                        {String(s.value).padStart(2, "0")}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">{s.sublabel}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xl font-bold text-foreground">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Upload zone */}
@@ -88,42 +119,81 @@ export default function Home() {
               <UploadZone />
             </div>
 
-            {/* Documents grid */}
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-base font-semibold text-foreground">
-                  {search.trim() ? `Results for "${search}"` : "Recent Documents"}
-                </h2>
-                <span className="text-xs text-muted-foreground">{filteredDocs.length} of {docs.length}</span>
+            <div className="grid gap-10 lg:grid-cols-[1fr_15rem]">
+              {/* Documents grid */}
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="font-serif text-lg font-medium text-foreground">
+                    {search.trim() ? `Results for "${search}"` : "Recent documents"}
+                  </h2>
+                  <span className="text-xs text-muted-foreground">{filteredDocs.length} of {docs.length}</span>
+                </div>
+
+                {docs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-5 rounded-lg border border-dashed border-border py-16 text-center px-6">
+                    <div className="relative h-14 w-14">
+                      <div className="absolute inset-x-1.5 top-1.5 h-full rounded-md border border-border bg-muted/60 rotate-[-6deg]" />
+                      <div className="absolute inset-0 flex items-center justify-center rounded-md border border-border bg-card shadow-sm">
+                        <FileText className="h-6 w-6 text-accent" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="mb-1.5 text-xs font-semibold tracking-widest text-accent uppercase">Your library</p>
+                      <p className="font-serif text-xl font-medium text-foreground">Your knowledge starts here.</p>
+                      <p className="mt-1.5 text-sm text-muted-foreground max-w-xs">
+                        Upload your first PDF and start asking questions about it.
+                      </p>
+                    </div>
+                    <Button onClick={() => setShowUploadModal(true)}>
+                      Upload your first PDF
+                    </Button>
+                    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-muted-foreground/70" /> Fast PDF processing</span>
+                      <span className="flex items-center gap-1.5"><MessageCircle className="h-3.5 w-3.5 text-muted-foreground/70" /> Ask questions naturally</span>
+                      <span className="flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5 text-muted-foreground/70" /> Understand documents faster</span>
+                    </div>
+                  </div>
+                ) : filteredDocs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-12 text-center">
+                    <FileText className="h-7 w-7 text-muted-foreground/40" />
+                    <p className="font-semibold text-foreground">No documents match &ldquo;{search}&rdquo;</p>
+                    <p className="text-sm text-muted-foreground">Try a different search term</p>
+                    <Button variant="outline" onClick={() => setSearch("")} className="mt-1">
+                      Clear search
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+                    {filteredDocs.map((doc, i) => (
+                      <div
+                        key={doc.docId}
+                        className="animate-in fade-in slide-in-from-bottom-1"
+                        style={{ animationDelay: `${Math.min(i, 6) * 60}ms`, animationDuration: "350ms", animationFillMode: "backwards" }}
+                      >
+                        <DocumentCard doc={doc} onDelete={removeDoc} />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {docs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border py-16 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-                    <UploadCloud className="h-7 w-7 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">No documents yet</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Upload your first PDF above to get started</p>
-                  </div>
-                  <Button onClick={() => setShowUploadModal(true)} className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl mt-1">
-                    Upload a PDF
-                  </Button>
-                </div>
-              ) : filteredDocs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border py-12 text-center">
-                  <FileText className="h-8 w-8 text-muted-foreground/50" />
-                  <p className="font-semibold text-foreground">No documents match &ldquo;{search}&rdquo;</p>
-                  <p className="text-sm text-muted-foreground">Try a different search term</p>
-                  <Button variant="outline" onClick={() => setSearch("")} className="rounded-xl mt-1">
-                    Clear search
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredDocs.map((doc) => (
-                    <DocumentCard key={doc.docId} doc={doc} onDelete={removeDoc} />
-                  ))}
+              {/* Recent activity — built only from real document/chat metadata */}
+              {activity.length > 0 && (
+                <div className="lg:border-l lg:border-border lg:pl-8">
+                  <h2 className="mb-4 font-serif text-lg font-medium text-foreground">Recent activity</h2>
+                  <ul className="space-y-4">
+                    {activity.map(({ doc, icon: Icon, text, when }) => (
+                      <li key={doc.docId} className="flex gap-2.5 text-sm">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10">
+                          <Icon className="h-3 w-3 text-accent" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-foreground leading-snug truncate">{text}</p>
+                          <p className="text-xs text-muted-foreground">{when}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>

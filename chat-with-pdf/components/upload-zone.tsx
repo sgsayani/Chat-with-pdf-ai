@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
-  CloudUpload, FileText, X, Loader2, CheckCircle2, AlertCircle,
+  FileText, X, Loader2, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -131,70 +131,86 @@ export function UploadZone({ modal = false, onClose }: Props) {
       onDragLeave={handleDragLeave}
       onDrop={uploadState === "idle" || uploadState === "selected" ? handleDrop : undefined}
       className={cn(
-        "relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200",
+        "relative flex flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center transition-all duration-200",
+        uploadState === "idle" && "text-left",
         isDragging
-          ? "border-violet-500 bg-violet-50 dark:bg-violet-950/30 scale-[1.01]"
+          ? "border-accent bg-accent/5 scale-[1.005]"
           : uploadState === "success"
-          ? "border-emerald-400 bg-emerald-50/40 dark:bg-emerald-900/10"
+          ? "border-emerald-400/60 bg-emerald-50/40 dark:bg-emerald-900/10"
           : uploadState === "error"
-          ? "border-rose-400 bg-rose-50/40 dark:bg-rose-900/10"
-          : "border-border hover:border-violet-400 hover:bg-muted/40 bg-muted/20"
+          ? "border-destructive/50 bg-destructive/5"
+          : "border-border hover:border-accent/40 bg-card"
       )}
     >
       {uploadState === "idle" && (
-        <>
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-            <CloudUpload className="h-8 w-8 text-muted-foreground" />
+        <div className="flex w-full flex-col items-center gap-6 md:flex-row md:items-center md:gap-8">
+          {/* CSS document-stack illustration */}
+          <div className={cn("relative h-24 w-24 shrink-0 transition-transform duration-300", isDragging && "scale-110")}>
+            <div className="absolute inset-x-3 top-3 h-full rounded-md border border-border bg-muted/60 rotate-[-6deg]" />
+            <div className="absolute inset-x-1.5 top-1.5 h-full rounded-md border border-border bg-muted rotate-[4deg]" />
+            <div className="absolute inset-0 flex flex-col gap-1.5 rounded-md border border-border bg-card p-3 shadow-sm">
+              <div className="h-1.5 w-1/2 rounded-full bg-accent/50" />
+              <div className="h-1 w-full rounded-full bg-foreground/10" />
+              <div className="h-1 w-4/5 rounded-full bg-foreground/10" />
+              <div className="h-1 w-full rounded-full bg-foreground/10" />
+              <div className="h-1 w-2/3 rounded-full bg-foreground/10" />
+            </div>
           </div>
-          <p className="mb-1 text-base font-semibold text-foreground">
-            {isDragging ? "Drop your PDF here" : "Drag & drop your PDF here"}
-          </p>
-          <p className="mb-5 text-sm text-muted-foreground">or click to browse from your computer</p>
-          <Button
-            variant="outline"
-            className="rounded-xl border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20"
-            onClick={() => document.getElementById("file-upload-input")?.click()}
-          >
-            Browse Files
-          </Button>
-          <input id="file-upload-input" type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
-          <p className="mt-4 text-xs text-muted-foreground">Supports PDF files up to 50 MB</p>
-        </>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-lg font-semibold text-foreground font-serif">
+              {isDragging ? "Drop it right here" : "Start with a document"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+              Drop a PDF here and turn it into an interactive conversation, or browse from your computer.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Button onClick={() => document.getElementById("file-upload-input")?.click()}>
+                Upload PDF
+              </Button>
+              <span className="text-xs text-muted-foreground">or drag and drop</span>
+            </div>
+            <input id="file-upload-input" type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5"><FileText className="h-3.5 w-3.5 text-muted-foreground/70" /> Up to 50 MB</span>
+              <span className="flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 text-muted-foreground/70" /> Fast processing</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground/70" /> AI-powered analysis</span>
+            </div>
+          </div>
+        </div>
       )}
 
       {uploadState === "selected" && selectedFile && (
         <div className="flex flex-col items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50 dark:bg-violet-900/20">
-            <FileText className="h-8 w-8 text-violet-600" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent/10">
+            <FileText className="h-6 w-6 text-accent" />
           </div>
-          <div className="flex items-center gap-2 rounded-xl bg-violet-50 dark:bg-violet-900/20 px-4 py-2.5 border border-violet-200 dark:border-violet-800">
-            <FileText className="h-4 w-4 text-violet-600 shrink-0" />
-            <span className="text-sm font-medium text-violet-700 dark:text-violet-300 max-w-[220px] truncate">
+          <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2.5 border border-border">
+            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium text-foreground max-w-[220px] truncate">
               {selectedFile.name}
             </span>
-            <button onClick={reset} className="text-violet-400 hover:text-violet-600 transition-colors ml-1">
+            <button onClick={reset} className="text-muted-foreground hover:text-foreground transition-colors ml-1">
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
           <p className="text-xs text-muted-foreground">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
-          <Button
-            onClick={handleUpload}
-            className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl px-8"
-          >
-            Upload & Analyze
+          <Button onClick={handleUpload} className="px-8">
+            Upload &amp; analyze
           </Button>
         </div>
       )}
 
       {uploadState === "uploading" && (
         <div className="flex flex-col items-center gap-4 w-full max-w-xs">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50 dark:bg-violet-900/20">
-            <Loader2 className="h-8 w-8 text-violet-600 animate-spin" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent/10">
+            <Loader2 className="h-6 w-6 text-accent animate-spin" />
           </div>
           <p className="font-semibold text-foreground">Processing your PDF…</p>
-          <p className="text-sm text-muted-foreground">Chunking, embedding & storing in Pinecone</p>
-          <div className="w-full h-2 rounded-full bg-muted overflow-hidden mt-1">
-            <div className="h-full bg-violet-600 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+          <p className="text-sm text-muted-foreground">Chunking, embedding &amp; storing in Pinecone</p>
+          <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mt-1">
+            <div className="h-full bg-accent rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
           <p className="text-xs text-muted-foreground">{progress}% complete</p>
         </div>
@@ -202,22 +218,22 @@ export function UploadZone({ modal = false, onClose }: Props) {
 
       {uploadState === "success" && (
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-900/20">
-            <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
+            <CheckCircle2 className="h-6 w-6 text-emerald-600" />
           </div>
-          <p className="font-semibold text-emerald-700 dark:text-emerald-400">Upload complete!</p>
+          <p className="font-semibold text-emerald-700 dark:text-emerald-400">Upload complete</p>
           <p className="text-sm text-muted-foreground">Redirecting to your chat…</p>
         </div>
       )}
 
       {uploadState === "error" && (
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-900/20">
-            <AlertCircle className="h-8 w-8 text-rose-600" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-destructive/10">
+            <AlertCircle className="h-6 w-6 text-destructive" />
           </div>
-          <p className="font-semibold text-rose-700 dark:text-rose-400">Upload failed</p>
+          <p className="font-semibold text-foreground">Upload failed</p>
           <p className="text-sm text-muted-foreground">{errorMsg}</p>
-          <Button variant="outline" className="rounded-xl" onClick={reset}>Try Again</Button>
+          <Button variant="outline" onClick={reset}>Try again</Button>
         </div>
       )}
     </div>
@@ -231,10 +247,10 @@ export function UploadZone({ modal = false, onClose }: Props) {
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === overlayRef.current) onClose?.(); }}
     >
-      <div className="relative w-full max-w-lg bg-background rounded-2xl shadow-2xl border border-border p-6">
+      <div className="relative w-full max-w-lg bg-card rounded-xl shadow-lg border border-border p-6 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-lg font-bold text-foreground">Upload a PDF</h2>
+            <h2 className="text-lg font-semibold text-foreground">Upload a PDF</h2>
             <p className="text-sm text-muted-foreground">Your document will be indexed for AI chat</p>
           </div>
           <button
