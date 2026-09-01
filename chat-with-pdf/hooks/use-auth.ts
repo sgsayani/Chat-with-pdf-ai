@@ -37,6 +37,10 @@ export function useAuth() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(SESSION_KEY);
+      // Deliberately deferred to after mount: localStorage doesn't exist
+      // during SSR, so reading it during render would produce a hydration
+      // mismatch. This has to run in an effect, not be moved to render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setUser(JSON.parse(raw));
     } catch { /* ignore */ }
     setLoading(false);

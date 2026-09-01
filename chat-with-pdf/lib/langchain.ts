@@ -72,23 +72,17 @@ export async function callChain({
     const transformStream = new TransformStream<string, string>();
     const writer = transformStream.writable.getWriter();
 
+    // LCEL's .stream() on a RunnableSequence already yields the terminal
+    // step's output incrementally (here: getStreamingModel() + the string
+    // parser) — that's the only token source we want. A handleLLMNewToken
+    // callback used to also be registered here, but callbacks propagate to
+    // *every* nested LLM call in the chain, including the standalone-
+    // question condensing step, so it was writing tokens from both models
+    // into the same stream on top of what .stream() already yields —
+    // doubled, interleaved, garbled output. Removed; iterate .stream()'s
+    // own output only.
     retrievalChain
-        .stream(
-            { question: sanitizedQuestion, chat_history: chatHistory },
-            {
-                callbacks: [
-                    {
-                        handleLLMNewToken: async (token: string) => {
-                            try {
-                                await writer.write(token);
-                            } catch {
-                                // writer may already be closed
-                            }
-                        },
-                    },
-                ],
-            }
-        )
+        .stream({ question: sanitizedQuestion, chat_history: chatHistory })
         .then(async (stream) => {
             // The stream here is the full AsyncGenerator of chunks
             for await (const chunk of stream) {

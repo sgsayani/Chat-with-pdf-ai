@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
-import { Sidebar } from "@/components/sidebar";
+import { Sidebar, SidebarDrawer } from "@/components/sidebar";
 import { UploadZone } from "@/components/upload-zone";
 import { DocumentCard } from "@/components/document-card";
 import { useDocuments } from "@/hooks/use-documents";
@@ -15,6 +15,7 @@ export default function Home() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { docs, removeDoc } = useDocuments(user?.email);
 
@@ -57,8 +58,15 @@ export default function Home() {
 
       <Navbar
         onUploadClick={() => setShowUploadModal(true)}
+        onMenuClick={() => setMobileNavOpen(true)}
         search={search}
         onSearchChange={setSearch}
+      />
+
+      <SidebarDrawer
+        open={mobileNavOpen}
+        onOpenChange={setMobileNavOpen}
+        onUploadClick={() => setShowUploadModal(true)}
       />
 
       <div className="flex flex-1">

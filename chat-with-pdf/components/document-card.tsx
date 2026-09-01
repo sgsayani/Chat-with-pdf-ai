@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { FileText, MessageSquare, Clock, Trash2, ArrowRight } from "lucide-react";
+import { MessageSquare, Clock, Trash2, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import type { StoredDoc } from "@/hooks/use-documents";
 
 /** Deterministic pseudo-random line lengths per document, so the CSS
@@ -26,18 +28,28 @@ export function DocumentCard({
   onDelete?: (docId: string) => void;
 }) {
   const widths = lineWidths(doc.docId);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-accent/30 hover:shadow-lg hover:shadow-foreground/5">
       {/* Delete button */}
       {onDelete && (
         <button
-          onClick={(e) => { e.preventDefault(); onDelete(doc.docId); }}
+          onClick={(e) => { e.preventDefault(); setConfirmOpen(true); }}
           className="absolute top-3 right-3 z-10 flex h-7 w-7 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-0 shadow-sm group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-all"
           title="Remove document"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
+      )}
+
+      {onDelete && (
+        <ConfirmDeleteDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          docName={doc.name}
+          onConfirm={() => onDelete(doc.docId)}
+        />
       )}
 
       <Link href={`/chat/${doc.docId}`} className="flex flex-col flex-1">

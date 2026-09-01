@@ -45,7 +45,10 @@ export function useDocuments(userEmail?: string | null) {
   const refresh = useCallback(() => setDocs(readDocs(key)), [key]);
 
   useEffect(() => {
-    // Re-read whenever the user changes (e.g. fresh signup)
+    // Re-read whenever the user changes (e.g. fresh signup). Deliberately
+    // deferred to after mount: localStorage doesn't exist during SSR, so
+    // reading it during render would produce a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
     window.addEventListener("chatpdf_docs_changed", refresh);
     window.addEventListener("storage", refresh);

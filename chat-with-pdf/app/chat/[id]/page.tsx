@@ -47,41 +47,84 @@ interface ChatMessage {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Markdown renderer (bold, bullets, numbered lists)
+// Markdown renderer (bold, inline code, bullets, numbered lists,
+// fenced ```code blocks)
 // ─────────────────────────────────────────────────────────────
-function renderBold(text: string) {
-  const parts = text.split(/\*\*(.*?)\*\*/g);
-  return parts.map((p, i) =>
-    i % 2 === 1 ? <strong key={i}>{p}</strong> : p
-  );
+
+/** Bold (**text**) and inline code (`text`) within a single line. */
+function renderInline(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("`") && part.endsWith("`") && part.length > 1) {
+      return (
+        <code key={i} className="rounded bg-foreground/10 px-1.5 py-0.5 font-mono text-[0.85em]">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
 }
 
-function MessageContent({ content }: { content: string }) {
-  const lines = content.split("\n");
+/** Renders the non-code portion of a message: paragraphs, bullets, numbered lists. */
+function TextBlock({ text }: { text: string }) {
+  const lines = text.split("\n");
   return (
-    <div className="space-y-1 text-sm">
+    <div className="space-y-1">
       {lines.map((line, i) => {
         if (!line.trim()) return <div key={i} className="h-1" />;
         if (line.trim().startsWith("- "))
           return (
             <li key={i} className="ml-4 list-disc leading-relaxed">
-              {renderBold(line.trim().slice(2))}
+              {renderInline(line.trim().slice(2))}
             </li>
           );
         if (/^\d+\.\s/.test(line.trim()))
           return (
             <li key={i} className="ml-4 list-decimal leading-relaxed">
-              {renderBold(line.trim().replace(/^\d+\.\s/, ""))}
+              {renderInline(line.trim().replace(/^\d+\.\s/, ""))}
             </li>
           );
         return (
           <p key={i} className="leading-relaxed">
-            {renderBold(line)}
+            {renderInline(line)}
           </p>
         );
       })}
     </div>
   );
+}
+
+/** Splits a message on fenced ```lang\n...\n``` blocks and renders each
+ * segment as either a code block or regular markdown text. */
+function MessageContent({ content }: { content: string }) {
+  const segments = content.split(/```(\w*)\n?([\s\S]*?)```/g);
+  // String.split with a capturing regex interleaves: [text, lang, code, text, lang, code, ..., text]
+  const nodes: React.ReactNode[] = [];
+  for (let i = 0; i < segments.length; i += 3) {
+    const text = segments[i];
+    const lang = segments[i + 1];
+    const code = segments[i + 2];
+    if (text) nodes.push(<TextBlock key={`t${i}`} text={text} />);
+    if (code !== undefined) {
+      nodes.push(
+        <div key={`c${i}`} className="my-1.5 overflow-hidden rounded-lg border border-border/60 bg-foreground/[0.04]">
+          {lang && (
+            <div className="border-b border-border/60 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              {lang}
+            </div>
+          )}
+          <pre className="overflow-x-auto px-3 py-2.5 text-xs leading-relaxed">
+            <code className="font-mono">{code.replace(/\n$/, "")}</code>
+          </pre>
+        </div>
+      );
+    }
+  }
+  return <div className="text-sm">{nodes}</div>;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -103,6 +146,10 @@ function PDFViewer({ docId, name, pages }: { docId: string; name: string; pages:
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const blob = new Blob([bytes], { type: "application/pdf" });
         objectUrl = URL.createObjectURL(blob);
+        // Object URL is created here specifically so it can be revoked in
+        // this effect's cleanup below — genuinely an effect, not derivable
+        // during render.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPdfUrl(objectUrl);
       } catch (e) {
         console.error("Failed to create PDF blob URL", e);
@@ -613,6 +660,10 @@ export default function ChatPage() {
     const userKey = `chatpdf_docs_${user.email.toLowerCase()}`;
     const stored: DocMeta[] = JSON.parse(localStorage.getItem(userKey) ?? "[]");
     const realDoc = stored.find((d) => d.docId === id);
+    // Deliberately deferred to after mount/auth-resolution: depends on
+    // localStorage (SSR-unsafe during render) and on `user`/`authLoading`
+    // settling first, both genuinely external to this render.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (realDoc) {
       setDoc(realDoc);
       setIsMockDoc(false);
@@ -631,6 +682,7 @@ export default function ChatPage() {
         setIsMockDoc(true);
       }
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
     setLoaded(true);
   }, [id, user, authLoading, router]);
 

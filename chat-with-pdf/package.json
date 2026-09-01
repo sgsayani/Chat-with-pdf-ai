@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.0",
+    "@base-ui/react": "^1.7.0",
     "@langchain/community": "^1.1.27",
     "@langchain/core": "^1.1.40",
     "@langchain/google-genai": "^2.1.27",

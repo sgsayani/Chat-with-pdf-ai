@@ -140,7 +140,7 @@ export async function embedAndStoreDocs(
     // of one call per chunk, so a bigger batch means fewer calls and less
     // exposure to the free-tier per-minute rate limit — not more risk of
     // tripping it. Gemini's batchEmbedContents caps at 100 requests/call.
-    const batchSize = 50;
+    const batchSize = 100;
     for (let i = 0; i < docs.length; i += batchSize) {
       const batch = docs.slice(i, i + batchSize);
       await PineconeStore.fromDocuments(batch, embeddings, {
