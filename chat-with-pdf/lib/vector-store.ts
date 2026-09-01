@@ -25,6 +25,10 @@ function isRateLimitError(error: unknown): boolean {
   return (error as { status?: number })?.status === 429;
 }
 
+function isTimeoutError(error: unknown): boolean {
+  return (error as { name?: string })?.name === "GoogleGenerativeAIAbortError";
+}
+
 /**
  * Custom Embeddings wrapper that calls Gemini SDK directly.
  * gemini-embedding-001 outputs 3072 dimensions.
@@ -43,16 +47,26 @@ class GeminiEmbeddings extends Embeddings {
     this.model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
   }
 
-  private async embedWithRetry(text: string, maxRetries = 5): Promise<number[]> {
+  private async embedWithRetry(text: string, maxRetries = 2): Promise<number[]> {
     for (let attempt = 0; ; attempt++) {
       try {
-        const r = await this.model.embedContent(text.slice(0, 8000)); // Gemini token limit
+        // Vercel functions get killed hard at maxDuration with no error of
+        // ours to catch — a per-call timeout turns a silent hang (observed
+        // in prod: request never resolves/rejects) into a retryable error.
+        // Kept tight (12s * 3 attempts + backoff ≈ 39s worst case) to stay
+        // inside the route's 60s maxDuration for the whole document.
+        const r = await this.model.embedContent(text.slice(0, 8000), {
+          timeout: 12_000,
+        }); // Gemini token limit
         return r.embedding.values;
       } catch (error) {
-        if (!isRateLimitError(error) || attempt >= maxRetries) throw error;
-        const delay = retryDelayMs(error) ?? 2 ** attempt * 1000;
+        const rateLimited = isRateLimitError(error);
+        if ((!rateLimited && !isTimeoutError(error)) || attempt >= maxRetries) {
+          throw error;
+        }
+        const delay = (rateLimited ? retryDelayMs(error) : null) ?? 2 ** attempt * 1000;
         console.warn(
-          `  ⏳ Gemini embedding rate-limited, retrying in ${Math.round(delay / 1000)}s (attempt ${attempt + 1}/${maxRetries})`
+          `  ⏳ Gemini embedding ${rateLimited ? "rate-limited" : "timed out"}, retrying in ${Math.round(delay / 1000)}s (attempt ${attempt + 1}/${maxRetries})`
         );
         await sleep(delay);
       }
